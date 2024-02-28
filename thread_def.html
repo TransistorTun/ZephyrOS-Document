@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Defination of Thread &mdash; ZephyrOS 0.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Detail of Thread" href="thread_detail.html" />
+    <link rel="prev" title="Thread" href="thread.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            ZephyrOS
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="thread.html">Thread</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Defination of Thread</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#defination">Defination</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="thread_detail.html">Detail of Thread</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ZephyrOS</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="thread.html">Thread</a></li>
+      <li class="breadcrumb-item active">Defination of Thread</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/thread_def.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="defination-of-thread">
+<h1>Defination of Thread<a class="headerlink" href="#defination-of-thread" title="Permalink to this heading"></a></h1>
+<section id="defination">
+<h2>Defination<a class="headerlink" href="#defination" title="Permalink to this heading"></a></h2>
+<p>Trong hệ điều hành, một “thread” (luồng) là một đơn vị nhỏ nhất của công việc được lập trình để thực hiện các tác vụ cụ thể. Thread được coi là một phần của quá trình (process) và chia sẻ tài nguyên với các thread khác trong cùng một quá trình. Dưới đây là một số tác dụng quan trọng của thread trong hệ điều hành:</p>
+<ol class="arabic simple">
+<li><p>Đa Nhiệm (Multitasking): Threads cho phép hệ điều hành thực hiện nhiều tác vụ cùng một lúc bằng cách chia nhỏ công việc thành các luồng độc lập. Điều này giúp tăng hiệu suất sử dụng tài nguyên hệ thống và cải thiện thời gian phản hồi của ứng dụng.</p></li>
+<li><p>Đa Luồng (Multithreading): Các ứng dụng có thể tận dụng các thread để thực hiện các tác vụ đồng thời, như xử lý dữ liệu, tương tác với người dùng, và thực hiện các phần mềm đa nhiệm.</p></li>
+<li><p>Tăng Tính Đáng Tin Cậy: Sử dụng thread có thể tăng tính đáng tin cậy của hệ thống bằng cách tách các tác vụ khỏi nhau. Nếu một thread gặp lỗi, các thread khác vẫn có thể tiếp tục hoạt động mà không bị ảnh hưởng.</p></li>
+<li><p>Chia Sẻ Tài Nguyên: Threads trong cùng một quá trình chia sẻ các tài nguyên như bộ nhớ và tài nguyên hệ thống khác. Điều này làm giảm chi phí so với việc tạo ra các quá trình mới mỗi khi cần thực hiện một tác vụ mới.</p></li>
+<li><p>Tương Tác và Phản Hồi Nhanh: Sử dụng thread cho phép ứng dụng tương tác với người dùng và đáp ứng nhanh chóng vào các sự kiện từ bên ngoài, như nhập liệu từ bàn phím hoặc chuột.</p></li>
+<li><p>Lập Trình Dễ Dàng Hơn: Việc sử dụng thread giúp lập trình viên dễ dàng hơn khi phát triển ứng dụng đa nhiệm và đa luồng, bởi vì chúng có thể tận dụng các khả năng đa nhiệm và đa luồng của hệ điều hành mà không cần quản lý các quá trình riêng biệt.</p></li>
+</ol>
+<p>Tóm lại, thread là một công cụ mạnh mẽ trong hệ điều hành giúp cải thiện hiệu suất, đáng tin cậy và khả năng tương tác của ứng dụng.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="thread.html" class="btn btn-neutral float-left" title="Thread" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="thread_detail.html" class="btn btn-neutral float-right" title="Detail of Thread" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, MrAT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

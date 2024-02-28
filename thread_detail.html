@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Detail of Thread &mdash; ZephyrOS 0.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Defination of Thread" href="thread_def.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            ZephyrOS
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="thread.html">Thread</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="thread_def.html">Defination of Thread</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Detail of Thread</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#life-cycle">Life cycle</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#thread-creation">Thread Creation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#thread-termination">Thread Termination</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#thread-aborting">Thread Aborting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#thread-suspension">Thread Suspension</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#thread-state">Thread State</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#thread-stack-object">Thread Stack object</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#kernel-only-stacks">Kernel-only Stacks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#thread-stacks">Thread stacks</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#thread-priorities">Thread Priorities</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#meta-irq-priorities">Meta-IRQ Priorities</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#thread-options">Thread Options</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ZephyrOS</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="thread.html">Thread</a></li>
+      <li class="breadcrumb-item active">Detail of Thread</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/thread_detail.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="detail-of-thread">
+<h1>Detail of Thread<a class="headerlink" href="#detail-of-thread" title="Permalink to this heading"></a></h1>
+<p>Phần này miêu tả và hướng dẫn các service kernel để  tạo, lập lịch và xóa các thread thực thi độc lập.</p>
+<p>Một thread là kernel object được sử dụng để xử lý ứng dụng quá dài hoặc quá phức tạp được thực hiện bởi ISR.</p>
+<p>Số lượng những thread có thể xác định bởi một ứng dụng (thường thì chỉ bị giới hạn bởi RAM).</p>
+<p>Mỗi thread được tham chiếu bởi một thread id, thread id được chỉ định khi thread được tạo.</p>
+<p>Một thread có những thuộc tính quan trọng sau:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>STACK AREA: là một vùng của memory được dùng để làm stack cho thread. Kích cỡ của stack area có thể được điều chỉnh để phù hợp với nhu cầu thực tế của quá trình xử lý thread. Các macro đặc biệt tồn tại để tạo và làm việc với các vùng stack memory</p></li>
+<li><p>THREAD CONTROL BLOCK:</p></li>
+<li><p>ENTRY POINT FUNCTION:</p></li>
+<li><p>SCHEDULING PRIORITY:</p></li>
+<li></li>
+<li><p>START DELAY:</p></li>
+<li><p>EXECUTION MODE:</p></li>
+</ul>
+</div></blockquote>
+<section id="life-cycle">
+<h2>Life cycle<a class="headerlink" href="#life-cycle" title="Permalink to this heading"></a></h2>
+<section id="thread-creation">
+<h3>Thread Creation<a class="headerlink" href="#thread-creation" title="Permalink to this heading"></a></h3>
+<p>Thread phải được tạo trước khi có thể sử dụng. Kernel khởi tạo “thread control block” ở phần đầu của stack. Phần stack còn lại của thread thường đươc để thành uninitialize.</p>
+<p><strong>k_no_wait</strong> sẽ hướng dẫn kernel tạo thread ngay lập tức. Ngoài ra kernel có thể được chỉ định thời gian tạo thread ví dụ cho như là chỉ định thời gian cho nó, để có thời gian để phần cứng thiết bị trở nên khả dụng.</p>
+<p>Kernel cho phép cái delayed start có thể được hủy trước khi thread được thực hiện. Việc yêu cầu hủy thread có không có hiệu lực khi mà thread đã bắt đầu. Khi đã hủy một cái thread thì muốn sử dụng lại cần khởi tạo lại từ đầu.</p>
+</section>
+<section id="thread-termination">
+<h3>Thread Termination<a class="headerlink" href="#thread-termination" title="Permalink to this heading"></a></h3>
+<p>Một khi thread được bắt đầu, nó thường được thực thi vĩnh viễn. Tuy nhiên, một thread có thể kết thúc việc thực thi đồng bộ của nó bằng cách quay về hàm entry point của nó. Việc này gọi là <strong>termination</strong> (chấm dứt).</p>
+<p>Một thread khi kết thúc có trách nhiệm giải phóng mọi tài nguyên mà được chia sẻ mà nó có thể sở hữu (chẳng hạn như mutex và các bộ nhớ cấp phát động của nó) trước khi quay trở lại, vì kernel không thể tự lấy lại những tài nguyên đó.</p>
+<p>Trong một số trường hợp, thread muốn sleep cho tới khi một thread khác dừng hẳn. Điều này có thể thực hiện bởi API <strong>k_thread_join()</strong>. Nó sẽ ngừng goị thread cho đến khi hết thời gian chờ. Thread mục tiêu tự thoát, hoặc bị hủy bỏ (do lệnh gọi k_thread_abort() hoặc gây ra lỗi nghiêm trọng).</p>
+<p>Khi một thread đã kết thúc, kernel đảm bảo rằng cấu trúc thread sẽ không được sử dụng. Bộ nhớ của cấu trúc như vậy sau đó có thể được sử dụng lại cho bất kỳ mục đích nào, bao gồm cả việc tạo ra một thread mới. Lưu ý rằng thread phải được kết thúc hoàn toàn, điều này thể hiện các điều kiện chạy đua trong đó việc hoàn thành tín hiệu logic của chính thread đó được một thread khác nhìn thấy trước khi quá trình xử lý kernel hoàn tất. Trong trường hợp thông thường, code nên sử dụng <strong>k_thread_join()</strong> hoặc <strong>k_thread_abort()</strong> để đồng bộ hóa ở trạng thái kết thúc thread và không dựa vào tín hiệu từ bên trong logic ứng dụng.</p>
+</section>
+<section id="thread-aborting">
+<h3>Thread Aborting<a class="headerlink" href="#thread-aborting" title="Permalink to this heading"></a></h3>
+<p>Một thread có thể kết thúc quá trình thực thi của nó một cách không đồng bộ bằng cách hủy bỏ (abort). Kernel tự động hủy bỏ một thread nếu thread đó kích hoạt một tình trạng lỗi nghiêm trọng, chẳng hạn như hủy tham chiếu một con trỏ null.</p>
+<p>Một thread cũng có thể bị hủy bỏ bởi một thread khác (hoặc bởi chính nó) bằng cách gọi k_thread_abort(). Tuy nhiên, thông thường tốt hơn là báo hiệu một thread tự kết thúc một cách nhẹ nhàng hơn là hủy bỏ nó.</p>
+<p>Giống như việc chấm dứt thread, kernel không thể tự lấy lại các tài nguyên được chia sẻ thuộc sở hữu của một thread bị hủy bỏ.</p>
+<div class="note admonition">
+<p class="admonition-title">Ghi chú</p>
+<p>Kernel hiện không đưa ra bất kỳ xác nhận nào liên quan đến khả năng của ứng dụng trong việc khôi phục một thread bị hủy bỏ.</p>
+</div>
+</section>
+<section id="thread-suspension">
+<h3>Thread Suspension<a class="headerlink" href="#thread-suspension" title="Permalink to this heading"></a></h3>
+<p>Một thread có thể bị ngăn không cho thực thi trong một khoảng thời gian không xác định nếu nó bị suspend. Hàm <strong>k_thread_suspend()</strong> có thể được sử dụng để tạm dừng bất kỳ thread nào, bao gồm cả thread đang gọi. Việc suspend một thread đã bị suspend (tạm dừng) không có tác dụng gì.</p>
+<p>Sau khi bị suspend, một thread không thể được lên lịch (schedule) cho đến khi một thread khác gọi <strong>k_thread_resume()</strong> để xóa việc tạm dừng.</p>
+<div class="note admonition">
+<p class="admonition-title">Ghi chú</p>
+<p>Một thread có thể ngăn chính nó thực thi trong một khoảng thời gian nhất định bằng cách sử dụng <strong>k_sleep()</strong>. Tuy nhiên, điều này khác với việc suspend một thread vì một thread đang ngủ sẽ tự động được thực thi khi đạt đến giới hạn thời gian.</p>
+</div>
+</section>
+</section>
+<section id="thread-state">
+<h2>Thread State<a class="headerlink" href="#thread-state" title="Permalink to this heading"></a></h2>
+<p>Một thread không có yếu tố ngăn cản việc thực thi nó được coi là <strong>sẵn sàng</strong> và đủ điều kiện để được chọn làm thread hiện tại.</p>
+<p>Một thread có một hoặc nhiều yếu tố ngăn cản việc thực thi nó được coi là <strong>chưa sẵn sàng</strong> và không thể được chọn làm thread hiện tại.</p>
+<p>Các yếu tố làm một thread <strong>unready</strong> (chưa sẵn sàng):</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Thread chưa được bắt đầu</p></li>
+<li><p>Thread đang chờ kernel hoàn thành một thao tác nào đó. Ví dụ: Thread đang sử dụng một semaphore không có sẵn.</p></li>
+<li><p>Thread đang chờ thời gian để xuất hiện</p></li>
+<li><p>Thread đang bị suspend</p></li>
+<li><p>Thread đang bị tạm dừng hoặc chấm dứt</p></li>
+</ul>
+</div></blockquote>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/thread_state.svg"><img alt="Priority" height="381" src="_images/thread_state.svg" width="601" /></a>
+</figure>
+<div class="note admonition">
+<p class="admonition-title">Ghi chú</p>
+<blockquote>
+<div><p>Mặc dù sơ đồ trên có thể gợi ý rằng cả trạng thái Ready và Running đều là các trạng thái thread riêng biệt, nhưng đó không phải là cách giải thích chính xác. Ready là trạng thái của thread và Running là trạng thái của Schedule chỉ áp dụng cho các thread Ready.</p>
+</div></blockquote>
+</div>
+</section>
+<section id="thread-stack-object">
+<h2>Thread Stack object<a class="headerlink" href="#thread-stack-object" title="Permalink to this heading"></a></h2>
+<p>Mỗi thread yêu cầu stack buffer riêng để CPU đẩy context (ngữ cảnh). Tùy thuộc vào cấu hình, có một số ràng buộc phải được đáp ứng:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Có thể cần thêm bộ nhớ dành riêng cho cấu trúc quản lý bộ nhớ (memory management structure).</p></li>
+<li><p>Nếu tính năng phát hiện stack overflow dựa trên bảo vệ được bật, một vùng quản lý bộ nhớ được bảo vệ ghi nhỏ phải ngay trước stack buffer để phát hiện tràn (stack overflow).</p></li>
+<li><p>Nếu userspace được bật, một stack nâng cao đặc quyền có kích thước cố định riêng biệt phải được dành riêng để phục vụ như một kernel stack riêng để xử lý các system calls.</p></li>
+<li><p>Nếu userspace được bật, stack buffer của thread phải có kích thước và căn chỉnh phù hợp sao cho vùng bảo vệ bộ nhớ có thể được lập trình phù hợp chính xác.</p></li>
+</ul>
+</div></blockquote>
+<p>Các ràng buộc căn chỉnh có thể khá hạn chế, ví dụ: một số MPU yêu cầu các vùng của chúng phải có lũy thừa bằng hai về kích thước và được căn chỉnh theo kích thước của chính nó.</p>
+<section id="kernel-only-stacks">
+<h3>Kernel-only Stacks<a class="headerlink" href="#kernel-only-stacks" title="Permalink to this heading"></a></h3>
+</section>
+<section id="thread-stacks">
+<h3>Thread stacks<a class="headerlink" href="#thread-stacks" title="Permalink to this heading"></a></h3>
+</section>
+</section>
+<section id="thread-priorities">
+<h2>Thread Priorities<a class="headerlink" href="#thread-priorities" title="Permalink to this heading"></a></h2>
+<p>Mức độ ưu tiên của thread là một giá trị nguyên và có thể âm hoặc không âm. Mức độ ưu tiên thấp hơn về số lượng sẽ được ưu tiên hơn các giá trị cao hơn về số lượng. Ví dụ: scheduler cung cấp cho thread A có mức độ ưu tiên 4 cao hơn thread B có mức độ ưu tiên 7; tương tự như vậy, thread C có mức độ ưu tiên -2 có mức độ ưu tiên cao hơn cả thread A và thread B.</p>
+<p>Scheduler phân biệt giữa hai loại thread, dựa trên mức độ ưu tiên của từng thread.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Một <em>cooperative</em> thread có giá trị ưu tiên âm. Khi nó trở thành thread hiện tại, một cooperative thread vẫn là thread hiện tại cho đến khi nó thực hiện một hành động khiến nó chưa sẵn sàng.</p></li>
+<li><p>Một <em>preemptible</em> (ưu tiên) thread có giá trị ưu tiên không âm. Khi nó trở thành thread hiện tại, một thread có thể ưu tiên có thể được thay thế bất kỳ lúc nào nếu một <em>cooperative</em> thread hoặc một thread có thể ưu tiên có mức độ ưu tiên cao hơn hoặc bằng nhau trở nên sẵn sàng.</p></li>
+</ul>
+</div></blockquote>
+<p>Giá trị ưu tiên ban đầu của thread có thể được thay đổi lên hoặc xuống sau khi thread được bắt đầu. Do đó, một thread ưu tiên có thể trở thành một cooperative thread và ngược lại, bằng cách thay đổi mức độ ưu tiên của nó.</p>
+<div class="note admonition">
+<p class="admonition-title">Ghi chú</p>
+<p>Scheduler không đưa ra quyết định heuristic để sắp xếp lại mức độ ưu tiên của các thread. Ưu tiên của thread chỉ được đặt và thay đổi theo yêu cầu của ứng dụng.</p>
+</div>
+<p>Kernel hỗ trợ số lượng mức độ ưu tiên của thread hầu như là không giới hạn. Các tùy chọn cấu hình <strong>CONFIG_NUM_COOP_PRIORITIES</strong> và <strong>CONFIG_NUM_PREEMPT_PRIORITIES</strong> chỉ định số mức độ ưu tiên cho từng loại thread, dẫn đến phạm vi ưu tiên có thể sử dụng được sau đây:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>cooperative threads</strong>: từ (- CONFIG_NUM_COOP_PRIORITIES) đến -1</p></li>
+<li><p><strong>preemptive threads</strong>: từ 0 đến (CONFIG_NUM_PREEMPT_PRIORITIES - 1)</p></li>
+</ul>
+</div></blockquote>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/priorities.svg"><img alt="Priority" height="312" src="_images/priorities.svg" width="889" /></a>
+</figure>
+<p>Ví dụ: cấu hình mức độ ưu tiên cooperative 5 và mức độ ưu tiên ưu tiên preemtive 10 sẽ có kết quả lần lượt là trong phạm vi từ -5 đến -1 và 0 đến 9.</p>
+<section id="meta-irq-priorities">
+<h3>Meta-IRQ Priorities<a class="headerlink" href="#meta-irq-priorities" title="Permalink to this heading"></a></h3>
+<p>Khi được bật (xem CONFIG_NUM_METAIRQ_PRIORITIES), sẽ có một lớp (subclass) đặc biệt về mức độ ưu tiên cooperative ở đầu cao nhất (thấp nhất về mặt số lượng) của không gian ưu tiên: meta-IRQ threads. Chúng được lên lịch theo mức độ ưu tiên thông thường nhưng cũng có khả năng đặc biệt để ưu tiên tất cả các thread khác (và các meta-IRQ thread khác) ở mức độ ưu tiên thấp hơn, ngay cả khi các thread đó cooperative và/hoặc đã bị khóa bởi scheduler. Tuy nhiên, các thread Meta-IRQ vẫn là các thread và vẫn có thể bị ngắt (gián đoạn) bởi bất kỳ hardware ngắt nào.</p>
+<p>Hành vi này thực hiện hành động bỏ chặn một meta-IRQ thread (bằng mọi cách, ví dụ: tạo nó, gọi k_sem_give(), v.v.) tương đương với lệnh gọi hệ thống đồng bộ (synchronous system call) khi được thực hiện bởi một thread có mức độ ưu tiên thấp hơn hoặc giống như ARM “IRQ đang chờ xử lý” khi được thực hiện từ bối cảnh ngắt (interrupt context) thực sự. Mục đích là tính năng này sẽ được sử dụng để triển khai các tính năng xử lý “bottom half” và/hoặc “tasklet” ngắt trong các hệ thống con trình điều khiển. Thread sau khi được đánh thức, sẽ được đảm bảo chạy trước khi CPU hiện tại quay trở lại code ứng dụng.</p>
+<p>Không giống như các tính năng tương tự trong các hệ điều hành khác, các meta-IRQ thread là các thread thực sự và chạy trên stack của riêng chúng (phải được phân bổ bình thường), không phải stack ngắt trên mỗi CPU. Việc thiết kế để cho phép sử dụng IRQ stack trên các kiến trúc được hỗ trợ đang chờ xử lý.</p>
+<p>Lưu ý rằng vì điều này phá vỡ ràng buộc đối với các cooperative thread của API Zephyr (cụ thể là OS sẽ không lên lịch cho thread khác cho đến khi thread hiện tại cố tình chặn). Do đó chỉ nên sử dụng nó một cách hết sức cẩn thận từ mã ứng dụng. Đây không chỉ đơn giản là những thread có mức độ ưu tiên rất cao mà còn không nên được sử dụng như vậy.</p>
+</section>
+</section>
+<section id="thread-options">
+<h2>Thread Options<a class="headerlink" href="#thread-options" title="Permalink to this heading"></a></h2>
+<p>Kernel hỗ trợ một tập hợp nhỏ các tùy chọn thread cho phép một thread nhận được sự xử lý đặc biệt trong các trường hợp cụ thể. Tập hợp các tùy chọn liên quan đến một thread được chỉ định khi thread được sinh ra.</p>
+<p>Một thread không yêu cầu bất kỳ tùy chọn thread nào có giá trị tùy chọn bằng 0. Một thread yêu cầu tùy chọn thread sẽ chỉ định nó theo tên, sử dụng | ký tự làm dấu phân cách nếu cần nhiều tùy chọn (tức là kết hợp các tùy chọn bằng toán tử OR theo bit).</p>
+<dl class="field-list simple">
+<dt class="field-odd">ref<span class="colon">:</span></dt>
+<dd class="field-odd"><p>‘K_ESSENTIAL’ và một số thứ lung tung</p>
+</dd>
+</dl>
+<p>adsjkfhkfhsahfjkhasdjkdhfjksdhkjfhsjkahfjklhasdjkdhfjkashdjkf</p>
+<blockquote id="api1">
+<div><p>K_ESSENTIAL</p>
+<p>system thread that must not abort</p>
+</div></blockquote>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="thread_def.html" class="btn btn-neutral float-left" title="Defination of Thread" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, MrAT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
