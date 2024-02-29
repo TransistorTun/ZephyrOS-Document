@@ -7,10 +7,12 @@ Welcome to MrAT's documentation!
 ====================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
    :caption: Contents:
 
    thread
+   modbus
+
 
 Indices and tables
 ==================
