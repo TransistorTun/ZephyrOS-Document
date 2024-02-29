@@ -21,6 +21,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Detail of Modbus" href="modbus_detail.html" />
     <link rel="prev" title="Modbus" href="modbus.html" /> 
 </head>
 
@@ -47,7 +48,15 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="thread.html">Thread</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="modbus.html">Modbus</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Defination of Modbus</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Defination of Modbus</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#defination">Defination</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#chung-ta-thuong-dung-modbus-o-dau">Chúng ta thường dùng Modbus ở đâu?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modbus-hoat-dong-nhu-the-nao">Modbus hoạt động như thế nào?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#data-duoc-luu-trong-modbus-tieu-chuan-nhu-the-nao">Data được lưu trong Modbus (tiêu chuẩn) như thế nào?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#server-id-la-gi">Server ID là gì?</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="modbus_detail.html">Detail of Modbus</a></li>
 </ul>
 </li>
 </ul>
@@ -79,6 +88,35 @@
              
   <section id="defination-of-modbus">
 <h1>Defination of Modbus<a class="headerlink" href="#defination-of-modbus" title="Link to this heading"></a></h1>
+<section id="defination">
+<h2>Defination<a class="headerlink" href="#defination" title="Link to this heading"></a></h2>
+<p>Nói một cách đơn giản, nó là một phương pháp được sử dụng để truyền thông tin qua đường nối tiếp giữa các thiết bị điện tử. Thiết bị yêu cầu thông tin được gọi là Modbus Client và các thiết bị cung cấp thông tin được gọi là Modbus Server. Trong mạng Modbus tiêu chuẩn, có một Modbus Client và tối đa 247 Modbus Servers, mỗi Modbus Server có một Địa chỉ Modbus Server duy nhất từ 1 đến 247. Modbus Client cũng có thể ghi thông tin vào Modbus Server.</p>
+</section>
+<section id="chung-ta-thuong-dung-modbus-o-dau">
+<h2>Chúng ta thường dùng Modbus ở đâu?<a class="headerlink" href="#chung-ta-thuong-dung-modbus-o-dau" title="Link to this heading"></a></h2>
+<p>Modbus là một protocol mở, có nghĩa là nó miễn phí cho những nhà sản xuất có thể xây dựng trên thiết bị của họ mà không cần trả phí. Nó đã trở thành một giao thức truyền thông tiêu chuẩn trong công nghiệp và hiện là phương tiện phổ biến nhất để kết nối các thiết bị điện tử công nghiệp. Nó được sử dụng rộng rãi bởi nhiều nhà sản xuất trong nhiều ngành công nghiệp. Modbus thường được sử dụng để truyền tín hiệu từ thiết bị đo đạc và điều khiển trở lại bộ điều khiển chính hoặc hệ thống thu thập dữ liệu, ví dụ như hệ thống đo nhiệt độ và độ ẩm và truyền kết quả đến máy tính.</p>
+<p>Modbus thường được sử dụng để kết nối máy tính giám sát với thiết bị đầu cuối từ xa (Remote Terminal Unit - RTU), trong các hệ thống SCADA.</p>
+</section>
+<section id="modbus-hoat-dong-nhu-the-nao">
+<h2>Modbus hoạt động như thế nào?<a class="headerlink" href="#modbus-hoat-dong-nhu-the-nao" title="Link to this heading"></a></h2>
+<p>Modbus được truyền qua đường nối tiếp giữa các thiết bị. Thiết lập đơn giản nhất sẽ là một cáp nối tiếp duy nhất kết nối các cổng nối tiếp trên hai thiết bị, Client và Server.</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/modbus_1.png"><img alt="Priority" src="_images/modbus_1.png" style="width: 710.0px; height: 192.0px;" /></a>
+</figure>
+<p>Dữ liệu được gửi dưới dạng chuỗi số 1 và số 0 được gọi là bit. Mỗi bit được gửi dưới dạng điện áp. Các số 0 được gửi dưới dạng điện áp dương và số 1 là âm. Các bit được gửi rất nhanh. Tốc độ truyền thông thường là 9600 baud (bit trên giây).</p>
+</section>
+<section id="data-duoc-luu-trong-modbus-tieu-chuan-nhu-the-nao">
+<h2>Data được lưu trong Modbus (tiêu chuẩn) như thế nào?<a class="headerlink" href="#data-duoc-luu-trong-modbus-tieu-chuan-nhu-the-nao" title="Link to this heading"></a></h2>
+<p>Thông tin được lưu trữ trong Server ở bốn bảng khác nhau. Hai bảng lưu trữ các giá trị bật/tắt riêng biệt (coils) và hai bảng lưu trữ các giá trị số (thanh ghi). Mỗi cuộn dây và thanh ghi đều có một bảng chỉ đọc và bảng đọc-ghi. Mỗi bảng có 9999 giá trị. Mỗi cuộn dây hoặc tiếp điểm là 1 bit và được gán một địa chỉ dữ liệu trong khoảng từ 0000 đến 270E.  Mỗi thanh ghi là 1 word = 16 bit = 2 byte và cũng có địa chỉ dữ liệu trong khoảng từ 0000 đến 270E.</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/modbus_2.png"><img alt="Priority" src="_images/modbus_2.png" style="width: 757.0px; height: 402.0px;" /></a>
+</figure>
+<p>Coil/Register Numbers ó thể được coi là tên vị trí vì chúng không xuất hiện trong tin nhắn thực tế. Data Addresses được sử dụng trong tin nhắn. Ví dụ: Thanh ghi lưu trữ đầu tiên, số 40001, có Địa chỉ dữ liệu 0000. Sự khác biệt giữa hai giá trị này là phần bù. Mỗi bảng có một độ lệch khác nhau. 1, 10001, 30001 và 40001.</p>
+</section>
+<section id="server-id-la-gi">
+<h2>Server ID là gì?<a class="headerlink" href="#server-id-la-gi" title="Link to this heading"></a></h2>
+<p>Mỗi server trong mạng được gán một địa chỉ đơn vị duy nhất từ 1 đến 247. Khi Client yêu cầu dữ liệu, byte đầu tiên nó gửi là địa chỉ Server. Bằng cách này, mỗi Server sẽ biết sau byte đầu tiên có bỏ qua tin nhắn hay không.</p>
+</section>
 </section>
 
 
@@ -86,6 +124,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="modbus.html" class="btn btn-neutral float-left" title="Modbus" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="modbus_detail.html" class="btn btn-neutral float-right" title="Detail of Modbus" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
