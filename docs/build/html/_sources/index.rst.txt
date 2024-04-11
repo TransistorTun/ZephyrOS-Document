@@ -12,7 +12,9 @@ Welcome to MrAT's documentation!
 
    thread
    modbus
-
+   timer.rst
+   device_driver
+   pulp
 
 Indices and tables
 ==================

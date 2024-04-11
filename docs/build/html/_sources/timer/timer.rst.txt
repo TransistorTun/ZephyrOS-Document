@@ -1,0 +1,11 @@
+Lesson 4: Timers
+=================
+
+.. toctree::
+   :maxdepth: 6
+   
+   timer_introduction
+   timer_commands
+   timer_kconfig
+   timer_excercise
+
