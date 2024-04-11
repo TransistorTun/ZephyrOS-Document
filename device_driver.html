@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Device driver model &mdash; ZephyrOS 0.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Getting Started PULP" href="pulp.html" />
+    <link rel="prev" title="Examples" href="timer_example.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            ZephyrOS
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="thread.html">Thread</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modbus.html">Modbus</a></li>
+<li class="toctree-l1"><a class="reference internal" href="timer.html">Lesson 4: Timers</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Device driver model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#vi-du-ve-device-driver-model">Ví dụ về Device driver model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#thuc-thi-device-driver">Thực thi device driver</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#cac-thanh-phan-chinh-cua-zephyr-device-driver">Các thành phần chính của Zephyr Device Driver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#viet-device-driver-bi-trong-zephyr">Viết device driver bị trong Zephyr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#system-initialization">System initialization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#system-call">System call</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#user-mode">User mode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#supervisor-mode">Supervisor mode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#device-driver-invocation-context">Device driver invocation context</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#driver-data-structures">Driver Data Structures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#subsystems-and-api-structures">Subsystems and API Structures</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pulp.html">Getting Started PULP</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ZephyrOS</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Device driver model</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/device_driver.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="device-driver-model">
+<h1>Device driver model<a class="headerlink" href="#device-driver-model" title="Permalink to this heading"></a></h1>
+<p>Zephyr RTOS dựa trên nRF Connect SDK cung cấp mô hình driver thiết bị (<strong>device driver model</strong>).
+Việc triển khai trình điều khiển này được tách biệt hoàn toàn khỏi API của nó, cho phép các nhà phát triển tắt việc triển khai trình điều khiển đòn bẩy thấp mà không cần sửa đổi ứng dụng ở trên cùng, vì chúng tôi có thể sử dụng cùng một API chung.</p>
+<p>Việc tách rời này có nhiều lợi ích, bao gồm mức độ di động cao, vì nó có thể sử dụng cùng một mã trên các bo mạch khác nhau mà không cần sửa đổi cách triển khai trình điều khiển cơ bản theo cách thủ công.</p>
+<p>Zephyr device driver model là kiến trúc xác định mối liên kết giữa các API chung và việc triển khai device driver. Chúng ta có thể chia mô hình thành ba phần khác nhau, như trong hình bên dưới.</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/device_driver_01.png"><img alt="Priority" src="_images/device_driver_01.png" style="width: 1024.0px; height: 1013.0px;" /></a>
+</figure>
+<p>Ba sub-categories cho device driver model là:</p>
+<ol class="arabic simple">
+<li><p>Device driver APIs</p></li>
+<li><p>Device driver instances</p></li>
+<li><p>Device driver implementation</p></li>
+</ol>
+<section id="vi-du-ve-device-driver-model">
+<h2>Ví dụ về Device driver model<a class="headerlink" href="#vi-du-ve-device-driver-model" title="Permalink to this heading"></a></h2>
+<p>Để tương tác với thiết bị ngoại vi phần cứng hoặc system block, chúng ta cần sử dụng device driver, đây là phần mềm xử lý các chi tiết cấp thấp trong việc định cấu hình phần cứng theo cách chúng ta muốn.
+Về cơ bản, chúng ta có thể tắt việc triển khai low-level driver mà không cần sửa đổi ứng dụng vì chúng ta có thể sử dụng cùng một API chung.</p>
+<p>Việc tách rời này có nhiều lợi ích, bao gồm mức độ di động cao, vì nó có thể sử dụng cùng một mã trên các bo mạch khác nhau mà không cần phải sửa đổi cách triển khai trình điều khiển cơ bản theo cách thủ công.</p>
+<p>Ứng dụng tương tác với phần cứng thông qua API chung bằng cách lấy con trỏ thiết bị cho phần cứng được đề cập, sử dụng macro <strong>DEVICE_DT_GET()</strong> hoặc các macro liên quan.</p>
+<div class="note admonition">
+<p class="admonition-title">Ghi chú</p>
+<p>Cũng có thể lấy con trỏ thiết bị thông qua device_get_bind(), mặc dù điều này không còn được khuyến khích nữa.</p>
+<p>Ngược lại với cách sử dụng trước đây là sử dụng device_get_bind() để truy xuất con trỏ thiết bị, việc sử dụng DEVICE_DT_GET() có lợi là sẽ thất bại tại thời điểm build nếu thiết bị không được driver cấp phát, chẳng hạn như nếu thiết bị không tồn tại trong devicetree hoặc có trạng thái bị vô hiệu hóa.</p>
+<p>Ngoài ra, không giống như device_get_bind(), nó không thực hiện so sánh run-time string, điều này có thể ảnh hưởng đến hiệu suất trong một số trường hợp.</p>
+</div>
+<p>Zephyr device model chịu trách nhiệm liên kết giữa các API chung và triển khai device driver.</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/device_driver_02.png"><img alt="Priority" src="_images/device_driver_02.png" style="width: 850.0px; height: 242.0px;" /></a>
+</figure>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/device_driver_03.png"><img alt="Priority" src="_images/device_driver_03.png" style="width: 1024.0px; height: 416.0px;" /></a>
+</figure>
+<p>Để lấy con trỏ thiết bị, bạn cần chuyển mã định danh devicetree node. Như đã đề cập trong phần Devicetree, có nhiều cách để lấy mã định danh node. Hai cách phổ biến là gắn nhãn node thông qua macro DT_NODELABEL() và bằng bí danh thông qua macro DT_ALIAS().</p>
+<p>Trước khi sử dụng con trỏ thiết bị, cần kiểm tra nó bằng device_is_ready():</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/device_driver_04.png"><img alt="Priority" src="_images/device_driver_04.png" style="width: 1024.0px; height: 301.0px;" /></a>
+</figure>
+<p><strong>device_is_ready()</strong> sẽ kiểm tra xem thiết bị đã sẵn sàng để sử dụng hay chưa, ví dụ: thiết bị có được khởi tạo đúng cách hay không.</p>
+<p>Đoạn code sau sẽ lấy mã định danh devicetree node được trả về bởi DT_NODELABEL() và trả về một con trỏ tới device object. Sau đó, device_is_ready() xác minh rằng thiết bị đã sẵn sàng để sử dụng, tức là ở trạng thái có thể sử dụng được với API tiêu chuẩn của nó.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">dev</span><span class="p">;</span><span class="w"></span>
+<span class="n">dev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DEVICE_DT_GET</span><span class="p">(</span><span class="n">DT_NODELABEL</span><span class="p">(</span><span class="n">uart0</span><span class="p">));</span><span class="w"></span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">device_is_ready</span><span class="p">(</span><span class="n">dev</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">   </span><span class="k">return</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Để sử dụng API chung của trình điều khiển thiết bị, bạn phải có một con trỏ kiểu const struct device để trỏ đến việc triển khai nó. Bạn cần thực hiện việc này cho mỗi ngoại vi.
+Ví dụ: nếu bạn có hai thiết bị ngoại vi UART (&amp;uart0 và &amp;uart1) và bạn muốn sử dụng cả hai, bạn phải có hai con trỏ riêng biệt thuộc loại const struct device.</p>
+<p>Nói cách khác, bạn cần có hai lệnh gọi khác nhau tới DEVICE_DT_GET().</p>
+<div class="note admonition">
+<p class="admonition-title">Ghi chú</p>
+<p>Hầu hết các API ngoại vi sẽ có các API tương đương với DEVICE_DT_GET() và device_is_ready() dành riêng cho thiết bị ngoại vi. Ví dụ: GPIO, GPIO_DT_SPEC_GET() và gpio_is_ready_dt() . Đây là những cách được khuyến nghị để sử dụng thiết bị ngoại vi vì chúng thu thập thêm thông tin về thiết bị ngoại vi từ cấu trúc cây thiết bị và giảm nhu cầu thêm cấu hình ngoại vi trong mã ứng dụng.</p>
+</div>
+</section>
+<section id="thuc-thi-device-driver">
+<h2>Thực thi device driver<a class="headerlink" href="#thuc-thi-device-driver" title="Permalink to this heading"></a></h2>
+<p>Khi triển khai device driver, người ta cần xem xét một số thành phần chính. Hầu hết các chi tiết triển khai của device driver được bao quanh xung quanh cấu trúc dữ liệu trình điều khiển, thiết bị cấu trúc, được hiển thị bên dưới trong đoạn mã đơn giản hóa.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">name</span><span class="p">;</span><span class="w"></span>
+<span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">config</span><span class="p">;</span><span class="w"></span>
+<span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">api</span><span class="p">;</span><span class="w"></span>
+<span class="w">   </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">data</span><span class="p">;</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
+</pre></div>
+</div>
+<p>DEVICE_DEFINE() là macro được sử dụng để tạo một struct device, chứa tất cả thông tin và cách tương tác với thiết bị cơ bản. Một số thành phần chính được đề cập dưới đây được cắm vào hệ thống bằng macro này.</p>
+<section id="cac-thanh-phan-chinh-cua-zephyr-device-driver">
+<h3>Các thành phần chính của Zephyr Device Driver<a class="headerlink" href="#cac-thanh-phan-chinh-cua-zephyr-device-driver" title="Permalink to this heading"></a></h3>
+<p>Device tree điển hình trong Zephyr bao gồm một số thành phần chính.</p>
+<p>Cấu hình: Một trong những thành phần của cấu trúc dữ liệu driver, <strong>const void * config</strong>, lưu trữ dữ liệu cấu hình của thiết bị và ở chế độ chỉ đọc. Dữ liệu cấu hình này có thể khác nhau đối với các thiết bị khác nhau và chứa đầy thông tin khi triển khai driver thiết bị tại thời điểm khởi tạo driver.</p>
+<p>Khởi tạo: Trong quá trình khởi tạo, driver thiết lập các tài nguyên cần thiết (như nguồn, bảo mật và trạng thái ban đầu của chân và bộ nhớ). Quá trình khởi tạo driver thiết bị phải chạy trước khi luồng chính của ứng dụng chạy và Zephyr cung cấp <strong>SYS_INIT()</strong> để thực hiện các lệnh gọi khởi tạo như vậy tại thời điểm khởi động.</p>
+<p>APIs: Driver hiển thị một bộ API cho phép mã ứng dụng tương tác với phần cứng. API này bên trong driver thiết bị được tạo dưới dạng cấu trúc của các con trỏ hàm. Địa chỉ của cấu trúc này được chuyển đến tham số api của cấu trúc dữ liệu driver trong macro <strong>DEVICE_DEFINE()</strong>
+tại thời điểm định nghĩa thiết bị trong quá trình triển khai driver thiết bị. Các API này bao gồm các chức năng đọc dữ liệu cảm biến, điều khiển bộ truyền động, định cấu hình các thanh ghi, v.v.</p>
+<p>Interrupt Handlers: Đối với các thiết bị tạo ra ngắt (ví dụ: chân GPIO, thiết bị ngoại vi, bộ hẹn giờ), interrupt handlers được triển khai bên trong driver thiết bị để xử lý các sự kiện này một cách không đồng bộ và thông báo cho ứng dụng về những thay đổi xảy ra thông qua API driver.</p>
+<p>Power Management: Một số driver hỗ trợ tính năng quản lý nguồn để tối ưu hóa mức tiêu thụ năng lượng khi xử lý các thiết bị chạy bằng pin. Nếu driver thiết bị đã triển khai cần hoặc muốn hỗ trợ trình cắm vào quản lý nguồn điện của hệ thống Zephyr thì driver thiết bị cần triển khai
+và hiển thị việc triển khai <strong>struct pm_device</strong> và chuyển nó tới macro <strong>DEVICE_DEFINE()</strong> tại thời điểm định nghĩa thiết bị . NULL cần được chuyển tới DEVICE_DEFINE nếu driver không muốn triển khai quản lý nguồn cho thiết bị.</p>
+</section>
+<section id="viet-device-driver-bi-trong-zephyr">
+<h3>Viết device driver bị trong Zephyr<a class="headerlink" href="#viet-device-driver-bi-trong-zephyr" title="Permalink to this heading"></a></h3>
+<p>Để viết device driver tùy chỉnh trong Zephyr:</p>
+<ol class="arabic simple">
+<li><p>Bắt đầu bằng cách tạo một thư mục mới trong trình điều khiển trong cây nguồn của dự án của bạn.</p></li>
+<li><p>Triển khai các chức năng cần thiết như quy trình khởi tạo và API dành riêng cho nền tảng phần cứng mục tiêu của bạn.</p></li>
+<li><p>Add your driver to the Zephyr build system by modifying the configuration file (prj.conf or zephyr.dts) and specifying the driver in the device tree.</p></li>
+<li><p>Sử dụng các API thích hợp từ các hệ thống con Zephyr hiện có, chẳng hạn như GPIO, I2C, SPI, v.v., để tương tác với các thiết bị phần cứng.</p></li>
+</ol>
+<p>Zephyr cung cấp một bộ trình điều khiển phong phú cho các thiết bị ngoại vi và giao diện truyền thông khác nhau. Các driver dựng sẵn này có thể được sử dụng trực tiếp hoặc dùng làm tài liệu tham khảo khi xây dựng driver tùy chỉnh.</p>
+</section>
+<section id="system-initialization">
+<h3>System initialization<a class="headerlink" href="#system-initialization" title="Permalink to this heading"></a></h3>
+<p>Trong Zephyr, bạn có thể khởi tạo các mô-đun của mình (thư viện/trình điều khiển, v.v.) theo thứ tự nhất định để giải quyết các phụ thuộc lẫn nhau. Ví dụ: giả sử việc khởi tạo driver X phụ thuộc vào driver Y được khởi tạo trước.
+Trong trường hợp đó, chúng ta cần chọn thứ tự khởi tạo driver Y sẽ được thực hiện trước khi quá trình khởi tạo driver X bắt đầu. Việc khởi tạo các mô-đun có thể được thực hiện bằng cách sử dụng SYS_INIT() lấy mức độ khởi tạo và mức độ ưu tiên làm đối số để tuần tự hóa thứ tự khởi tạo.
+Các mức khởi tạo được mô tả rõ ràng trong tài liệu Zephyr.</p>
+</section>
+<section id="system-call">
+<h3>System call<a class="headerlink" href="#system-call" title="Permalink to this heading"></a></h3>
+<p>Trong Zephyr, giống như bất kỳ hệ điều hành nào khác, system là cách để các chương trình tương tác với hệ điều hành.
+Nó cho phép họ yêu cầu các dịch vụ như thao tác tệp, quản lý quy trình và giao tiếp mạng không có sẵn trực tiếp trong mã của riêng họ.</p>
+<p>Các system call cung cấp cầu nối giữa các ứng dụng cấp người dùng và nhân của hệ điều hành. Chúng cho phép các chương trình truy cập các
+hướng dẫn và tài nguyên đặc quyền mà lẽ ra không thể truy cập được từ không gian người dùng.</p>
+<p>Trong hầu hết các ngôn ngữ lập trình, các system call được thực hiện thông qua giao diện lập trình ứng dụng (API). API này cung cấp một tập
+hợp các hàm hoặc phương thức mà nhà phát triển có thể gọi để sử dụng các khả năng cơ bản của hệ thống.</p>
+<p>Một số ví dụ phổ biến về system call bao gồm:</p>
+<ul class="simple">
+<li><p>Mở và đóng các thiết bị ngoại vi/tập tin</p></li>
+<li><p>Đọc và ghi vào thiết bị ngoại vi/tập tin</p></li>
+<li><p>Tạo và quản lý các quy trình</p></li>
+<li><p>Phân bổ bộ nhớ động</p></li>
+<li><p>Gửi dữ liệu qua mọi phương tiện truyền tải (không dây/ổ cắm/I2C/SPI, v.v.)</p></li>
+</ul>
+<p>System call thường liên quan đến việc truyền tham số hoặc đối số để chỉ định hành vi mong muốn. Các tham số này có thể bao gồm tên tệp, kích thước bộ đệm, ID tiến trình hoặc thông tin liên quan khác.</p>
+</section>
+<section id="user-mode">
+<h3>User mode<a class="headerlink" href="#user-mode" title="Permalink to this heading"></a></h3>
+<p>Trong chế độ người dùng của Zephyr, các ứng dụng chạy với các đặc quyền hạn chế để đảm bảo tính ổn định và bảo mật của hệ thống. Ở chế độ này, các ứng dụng có quyền truy cập hạn chế vào tài nguyên phần cứng và bị cô lập khỏi các tiến trình khác đang chạy trong hệ thống.
+Điều này giúp ngăn chặn mã độc hoặc mã lỗi ảnh hưởng đến các hoạt động quan trọng của hệ thống.</p>
+</section>
+<section id="supervisor-mode">
+<h3>Supervisor mode<a class="headerlink" href="#supervisor-mode" title="Permalink to this heading"></a></h3>
+<dl class="simple">
+<dt>Supervisor mode, còn được gọi là Kernel mode, là môi trường thực thi đặc quyền chứa kernel hệ điều hành. Trong chế độ này, kernel có quyền truy cập không hạn chế vào tất cả các tài nguyên phần cứng và có thể thực hiện các hoạt động đặc quyền như quản lý bộ nhớ,</dt><dd><p>lập lịch tác vụ, xử lý các ngắt và điều khiển trình điều khiển thiết bị. Chỉ mã đáng tin cậy mới được thực thi ở chế độ giám sát để duy trì tính toàn vẹn của hệ thống.</p>
+</dd>
+</dl>
+<p>Cả ứng dụng ở user mode và supervisor mode đều cùng tồn tại trong hệ điều hành Zephyr để cung cấp nền tảng mạnh mẽ để phát triển các hệ thống nhúng với các yêu cầu nghiêm ngặt về hiệu suất, độ tin cậy và bảo mật.</p>
+<p>Thông thường, khi một chương trình thực hiện lệnh gọi hệ thống, nó sẽ chuyển từ chế độ người dùng sang chế độ giám sát, trong đó thao tác được yêu cầu được thực thi thay mặt cho chương trình gọi. Sau khi hoàn thành, quyền kiểm soát sẽ được trả lại cho người gọi cùng với mọi kết quả hoặc mã lỗi.
+Sự khác biệt giữa chế độ người dùng và chế độ giám sát thường được thực hiện dựa trên một số mục tiêu thiết kế bảo mật.</p>
+</section>
+<section id="device-driver-invocation-context">
+<h3>Device driver invocation context<a class="headerlink" href="#device-driver-invocation-context" title="Permalink to this heading"></a></h3>
+<p>Hiểu ngữ cảnh gọi của các cuộc gọi hệ thống là điều cần thiết đối với các nhà phát triển muốn xây dựng các thành phần phần mềm cấp thấp hoặc tương tác trực tiếp với các thiết bị phần cứng. Hầu hết các mẫu được tạo trong ứng dụng hoạt động với CONFIG_USERSPACE chưa được bật.
+Ở chế độ này, tất cả các API chỉ gọi trực tiếp chức năng triển khai.</p>
+</section>
+</section>
+<section id="driver-data-structures">
+<h2>Driver Data Structures<a class="headerlink" href="#driver-data-structures" title="Permalink to this heading"></a></h2>
+<p>Các macro khởi tạo thiết bị đưa vào một số data structures tại thời điểm build, được chia thành các phần chỉ đọc và phần có thể thay đổi trong thời gian chạy.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">name</span><span class="p">;</span><span class="w"></span>
+<span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">config</span><span class="p">;</span><span class="w"></span>
+<span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">api</span><span class="p">;</span><span class="w"></span>
+<span class="w">   </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">data</span><span class="p">;</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Những thành phần <code class="docutils literal notranslate"><span class="pre">config</span></code> thì cho những data được cấu hình read-only. Ví dụ: các địa chỉ IO, IRQ line number, … Cấu hình này được <code class="docutils literal notranslate"><span class="pre">config</span> <span class="pre">pointer</span></code> truyền tới <code class="docutils literal notranslate"><span class="pre">DEVICE_DEFINE()</span></code> và các macro có liên quan.</p>
+<p>Những struct <code class="docutils literal notranslate"><span class="pre">data</span></code> thì được đặt trong RAM, và được sử dụng bởi driver để quản lý runtime. Ví dụ: nó có thể chứa số lượng tham chiếu, semaphores, scratch buffers,…</p>
+<p>NHững struct <code class="docutils literal notranslate"><span class="pre">api</span></code> ánh xạ những API từ subsystem tới các driver thực thi cho từng thiết bị cụ thể.</p>
+</section>
+<section id="subsystems-and-api-structures">
+<h2>Subsystems and API Structures<a class="headerlink" href="#subsystems-and-api-structures" title="Permalink to this heading"></a></h2>
+<p>Hầu hết các driver sẽ thực hiện subsystem API độc lập với thiết bị.</p>
+<p>Một subsystem API thường được định nghĩa như thế này:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">subsystem_do_this_t</span><span class="p">)(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">dev</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">foo</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">bar</span><span class="p">);</span><span class="w"></span>
+<span class="k">typedef</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">subsystem_do_that_t</span><span class="p">)(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">dev</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">baz</span><span class="p">);</span><span class="w"></span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">subsystem_api</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="n">subsystem_do_this_t</span><span class="w"> </span><span class="n">do_this</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="n">subsystem_do_that_t</span><span class="w"> </span><span class="n">do_that</span><span class="p">;</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
+
+<span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">subsystem_do_this</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">dev</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">foo</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">bar</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="k">struct</span><span class="w"> </span><span class="nc">subsystem_api</span><span class="w"> </span><span class="o">*</span><span class="n">api</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">      </span><span class="n">api</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">subsystem_api</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">dev</span><span class="o">-&gt;</span><span class="n">api</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">api</span><span class="o">-&gt;</span><span class="n">do_this</span><span class="p">(</span><span class="n">dev</span><span class="p">,</span><span class="w"> </span><span class="n">foo</span><span class="p">,</span><span class="w"> </span><span class="n">bar</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">subsystem_do_that</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">dev</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">baz</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="k">struct</span><span class="w"> </span><span class="nc">subsystem_api</span><span class="w"> </span><span class="o">*</span><span class="n">api</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">      </span><span class="n">api</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">subsystem_api</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">dev</span><span class="o">-&gt;</span><span class="n">api</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="n">api</span><span class="o">-&gt;</span><span class="n">do_that</span><span class="p">(</span><span class="n">dev</span><span class="p">,</span><span class="w"> </span><span class="n">baz</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Ví dụ cụ thể:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">my_driver_do_this</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">dev</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">foo</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">bar</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="p">...</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">my_driver_do_that</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">dev</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">baz</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="p">...</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="k">static</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">subsystem_api</span><span class="w"> </span><span class="n">my_driver_api_funcs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="p">.</span><span class="n">do_this</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">my_driver_do_this</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="p">.</span><span class="n">do_that</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">my_driver_do_that</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Lúc này driver sẽ chuyển <code class="docutils literal notranslate"><span class="pre">my_driver_api_funcs</span></code> làm <code class="docutils literal notranslate"><span class="pre">api</span></code> trong <code class="docutils literal notranslate"><span class="pre">DEVICE_DEFINE()</span></code>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="timer_example.html" class="btn btn-neutral float-left" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pulp.html" class="btn btn-neutral float-right" title="Getting Started PULP" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, MrAT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
